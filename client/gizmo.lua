@@ -86,7 +86,20 @@ local function gizmoLoop(entity)
     
     while gizmoEnabled and DoesEntityExist(entity) do
         Wait(0)
-        if IsControlJustPressed(0, 47) then -- G
+
+        -- Disable controls that conflict with gizmo keys
+        DisableControlAction(0, 24, true)  -- lmb
+        DisableControlAction(0, 25, true)  -- rmb
+        DisableControlAction(0, 44, true)  -- Q (INPUT_COVER)
+        DisableControlAction(0, 45, true)  -- R (INPUT_RELOAD)
+        DisableControlAction(0, 140, true) -- R (INPUT_MELEE_ATTACK_ALTERNATE)
+        DisableControlAction(0, 21, true)  -- W (INPUT_SPRINT) - prevent sprint
+        DisableControlAction(0, 18, true)  -- ENTER (INPUT_ENTER)
+        DisableControlAction(0, 19, true)  -- LALT (INPUT_CHARACTER_WHEEL)
+        DisablePlayerFiring(cache.playerId, true)
+
+        -- G - Toggle cursor mode (control 47 is not disabled, so use normal check)
+        if IsControlJustPressed(0, 47) then
             if isCursorActive then
                 LeaveCursorMode()
                 isCursorActive = false
@@ -95,10 +108,39 @@ local function gizmoLoop(entity)
                 isCursorActive = true
             end
         end
-        DisableControlAction(0, 24, true)  -- lmb
-        DisableControlAction(0, 25, true)  -- rmb
-        DisableControlAction(0, 140, true) -- r
-        DisablePlayerFiring(cache.playerId, true)
+
+        -- W - Translate mode
+        if IsDisabledControlJustPressed(0, 32) then -- W key (INPUT_MOVE_UP_ONLY)
+            currentMode = 'Translate'
+            ExecuteCommand('+gizmoTranslation')
+            ExecuteCommand('-gizmoTranslation')
+        end
+
+        -- R - Rotate mode
+        if IsDisabledControlJustPressed(0, 45) then -- R key (INPUT_RELOAD)
+            currentMode = 'Rotate'
+            ExecuteCommand('+gizmoRotation')
+            ExecuteCommand('-gizmoRotation')
+        end
+
+        -- Q - Toggle local/world space
+        if IsDisabledControlJustPressed(0, 44) then -- Q key (INPUT_COVER)
+            isRelative = not isRelative
+            ExecuteCommand('+gizmoLocal')
+            ExecuteCommand('-gizmoLocal')
+        end
+
+        -- ENTER - Done editing
+        if IsDisabledControlJustPressed(0, 18) then -- ENTER key (INPUT_ENTER)
+            gizmoEnabled = false
+        end
+
+        -- LALT - Snap to ground
+        if IsDisabledControlJustPressed(0, 19) then -- LALT key (INPUT_CHARACTER_WHEEL)
+            if currentEntity then
+                PlaceObjectOnGroundProperly_2(currentEntity)
+            end
+        end
 
         local matrixBuffer = makeEntityMatrix(entity)
         local changed = Citizen.InvokeNative(0xEB2EDCA2, matrixBuffer:Buffer(), 'Editor1',
@@ -139,16 +181,17 @@ local function textUILoop()
             local modeLine = 'Current Mode: ' .. currentMode .. ' | ' .. (isRelative and 'Relative' or 'World') .. '  \n'
 
             lib.showTextUI(
-                modeLine ..
-                GetVectorText("coords") .. '  \n' ..
-                GetVectorText("rotation") .. '  \n' ..
-                '[G]     - ' .. (isCursorActive and locale("disable_cursor") or locale("enable_cursor")) .. '  \n' ..
-                '[W]     - ' .. locale("translate_mode") .. '  \n' ..
-                '[R]     - ' .. locale("rotate_mode") .. '  \n' ..
+                'GIZMO CONTROLS\n\n' ..
+                -- modeLine ..
+                -- GetVectorText("coords") .. '  \n' ..
+                -- GetVectorText("rotation") .. '  \n' ..
+                '[G]     - ' .. (isCursorActive and locale("Disable Freelook") or locale("Enable Freelook")) .. '  \n' ..
+                '[W]     - ' .. locale("Translate Mode") .. '  \n' ..
+                '[R]     - ' .. locale("Rotate Mode") .. '  \n' ..
                 scaleText ..
-                '[Q]     - ' .. locale("toggle_space") .. '  \n' ..
-                '[LALT]  - ' .. locale("snap_to_ground") .. '  \n' ..
-                '[ENTER] - ' .. locale("done_editing") .. '  \n'
+                '[Q]     - ' .. locale("Real World Space") .. '  \n' ..
+                '[LALT]  - ' .. locale("Snap To Ground") .. '  \n' ..
+                '[ENTER] - ' .. locale("Done Placing Ped") .. '  \n'
             )
         end
         lib.hideTextUI()
