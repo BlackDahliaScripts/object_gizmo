@@ -94,7 +94,6 @@ local function gizmoLoop(entity)
         DisableControlAction(0, 45, true)  -- R (INPUT_RELOAD)
         DisableControlAction(0, 140, true) -- R (INPUT_MELEE_ATTACK_ALTERNATE)
         DisableControlAction(0, 21, true)  -- W (INPUT_SPRINT) - prevent sprint
-        DisableControlAction(0, 18, true)  -- ENTER (INPUT_ENTER)
         DisableControlAction(0, 19, true)  -- LALT (INPUT_CHARACTER_WHEEL)
         DisablePlayerFiring(cache.playerId, true)
 
@@ -128,11 +127,6 @@ local function gizmoLoop(entity)
             isRelative = not isRelative
             ExecuteCommand('+gizmoLocal')
             ExecuteCommand('-gizmoLocal')
-        end
-
-        -- ENTER - Done editing
-        if IsDisabledControlJustPressed(0, 18) then -- ENTER key (INPUT_ENTER)
-            gizmoEnabled = false
         end
 
         -- LALT - Snap to ground
