@@ -4,6 +4,18 @@
 
 local dataview = require 'client.dataview'
 
+-- Register gizmo commands so players have permission to execute them (restricted = false)
+RegisterCommand('+gizmoSelect', function() end, false)
+RegisterCommand('-gizmoSelect', function() end, false)
+RegisterCommand('+gizmoTranslation', function() end, false)
+RegisterCommand('-gizmoTranslation', function() end, false)
+RegisterCommand('+gizmoRotation', function() end, false)
+RegisterCommand('-gizmoRotation', function() end, false)
+RegisterCommand('+gizmoLocal', function() end, false)
+RegisterCommand('-gizmoLocal', function() end, false)
+RegisterCommand('+gizmoScale', function() end, false)
+RegisterCommand('-gizmoScale', function() end, false)
+
 local enableScale = false -- allow scaling mode. doesnt scale collisions and resets when physics are applied it seems
 local isCursorActive = false
 local gizmoEnabled = false
